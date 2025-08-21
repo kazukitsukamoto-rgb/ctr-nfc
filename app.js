@@ -46,7 +46,7 @@
 
     // ------------- wakelock -------------
     enableWakeLock: async () => {
-      try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch {}
+      try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch { }
     },
 
     // ------------- sync badge -------------
@@ -237,6 +237,10 @@
         // tiny delay to ensure DOM settled; then count
         setTimeout(() => {
           CTR.handleLapScan({ tagId: q.tag || '', urlCourse: q.course || '' });
+
+          // Silently update the URL to remove query params after operation
+          const newUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, "", newUrl);
         }, 200);
       }
     },
@@ -273,7 +277,7 @@
   // (optional) service worker; safe if sw.js missing
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').catch(() => { });
     });
   }
 
