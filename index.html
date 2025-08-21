@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choice to Run — Registration</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#111111" />
+</head>
+<body class="page page--setup">
+  <header class="appbar">
+    <h1>Choice to Run</h1>
+    <div id="sync-badge" class="badge badge--ok" title="Synced"></div>
+  </header>
+
+  <main class="card">
+    <h2>Runner Registration</h2>
+
+    <!-- Short, mobile-friendly caution -->
+    <p class="caution">
+      ⚠️ <strong>Use your real full name</strong><br>
+      Laps won't be recorded otherwise.
+    </p>
+
+    <form id="reg-form" novalidate>
+      <label>Full Name
+        <input type="text" id="name" placeholder="e.g., Tan Wei Ming" required />
+      </label>
+
+      <label>Course
+        <!-- Placeholder is disabled/non-selectable -->
+        <select id="course" required>
+          <option value="" disabled selected hidden>Select a course</option>
+          <option value="serious">Super Serious Run</option>
+          <option value="fun">Super Fun Run</option>
+        </select>
+      </label>
+
+      <fieldset class="row">
+        <legend>Category</legend>
+        <label class="chip">
+          <input type="radio" name="category" value="individual" required />
+          <span>Individual</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="category" value="team" required />
+          <span>Team</span>
+        </label>
+      </fieldset>
+
+      <label id="team-label" class="hidden">Team Name
+        <input type="text" id="team" placeholder="Team name" />
+      </label>
+
+      <button id="start-btn" class="btn btn--primary" type="submit" disabled>
+        Start Run
+      </button>
+    </form>
+
+    <div class="note">
+      Registration locks after <em>Start Run</em>. Scan NFC tag to count laps.
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <footer class="footer">
+    <a class="link-muted" href="status.html" aria-label="Hidden status page">(status)</a>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Prefill & validate
+      window.CTR.updateSyncBadge();
+
+      const nameEl = document.getElementById('name');
+      const courseEl = document.getElementById('course');
+      const teamLabel = document.getElementById('team-label');
+      const teamEl = document.getElementById('team');
+      const form = document.getElementById('reg-form');
+      const startBtn = document.getElementById('start-btn');
+
+      nameEl.value = CTR.get('runner.name') || '';
+      const savedCourse = CTR.get('runner.course') || '';
+      if (savedCourse) courseEl.value = savedCourse;
+
+      const savedCategory = CTR.get('runner.category') || '';
+      if (savedCategory) {
+        const r = document.querySelector(`input[name="category"][value="${savedCategory}"]`);
+        if (r) r.checked = true;
+        toggleTeam(savedCategory === 'team');
+      }
+      teamEl.value = CTR.get('runner.team') || '';
+
+      function toggleTeam(show) {
+        teamLabel.classList.toggle('hidden', !show);
+        teamEl.required = show;
+      }
+
+      document.querySelectorAll('input[name="category"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          toggleTeam(e.target.value === 'team');
+          validate();
+        });
+      });
+
+      [nameEl, courseEl, teamEl].forEach(el => el.addEventListener('input', validate));
+      courseEl.addEventListener('change', validate);
+
+      function validate() {
+        const nameOk = nameEl.value.trim().length >= 3;
+        const courseOk = courseEl.value === 'serious' || courseEl.value === 'fun';
+        const cat = document.querySelector('input[name="category"]:checked');
+        const catOk = !!cat;
+        const teamOk = cat && cat.value === 'team' ? teamEl.value.trim().length >= 2 : true;
+        startBtn.disabled = !(nameOk && courseOk && catOk && teamOk);
+      }
+      validate();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const category = document.querySelector('input[name="category"]:checked').value;
+
+        CTR.set('runner.name', nameEl.value.trim());
+        CTR.set('runner.course', courseEl.value);
+        CTR.set('runner.category', category);
+        CTR.set('runner.team', category === 'team' ? teamEl.value.trim() : '');
+        CTR.set('runner.registered', '1');
+
+        // Reset lap state
+        CTR.set('laps.count', '0');
+        CTR.remove('laps.lastAt');
+        CTR.remove('laps.lastTag');
+
+        CTR.toast('Registered');
+        window.location.href = 'run.html';
+      });
+
+      // Ensure team visibility on load
+      toggleTeam(savedCategory === 'team');
+    });
+  </script>
+</body>
+</html> 

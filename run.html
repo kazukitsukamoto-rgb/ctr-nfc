@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choice to Run — Laps</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0d1a2b" />
+</head>
+<body class="page page--run">
+  <header class="appbar">
+    <h1>Laps</h1>
+    <div id="sync-badge" class="badge badge--ok" title="Synced"></div>
+  </header>
+
+  <main class="card card--run">
+    <div class="runner">
+      <div><strong id="r-name">—</strong></div>
+      <div class="muted"><span id="r-course">—</span> · <span id="r-cat">—</span><span id="r-team-wrap" class="hidden"> · Team: <span id="r-team"></span></span></div>
+    </div>
+
+    <div class="lapbox">
+      <div class="lap-label">Laps</div>
+      <div id="lap-count" class="lap-count">0</div>
+      <div id="lap-hint" class="muted">Scan NFC tag to count</div>
+    </div>
+
+    <div class="actions">
+      <button id="end-btn" class="btn btn--danger">End Race</button>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Update sync badge and try syncing at start
+      window.CTR.updateSyncBadge();
+      CTR.trySyncLoop();
+
+      // Wake Lock on run screen
+      CTR.enableWakeLock();
+
+      // Load runner info
+      const name = CTR.get('runner.name') || '';
+      const course = CTR.get('runner.course') || '';
+      const category = CTR.get('runner.category') || '';
+      const team = CTR.get('runner.team') || '';
+      const reg = CTR.get('runner.registered') === '1';
+
+      if (!reg) {
+        CTR.toast('Register before running');
+        window.location.href = 'index.html';
+      }
+
+      const nameEl = document.getElementById('r-name');
+      const courseEl = document.getElementById('r-course');
+      const catEl = document.getElementById('r-cat');
+      const teamWrap = document.getElementById('r-team-wrap');
+      const teamEl = document.getElementById('r-team');
+      const lapCountEl = document.getElementById('lap-count');
+
+      nameEl.textContent = name;
+      courseEl.textContent = course === 'serious' ? 'Super Serious Run' : 'Super Fun Run';
+      catEl.textContent = category === 'team' ? 'Team' : 'Individual';
+      if (category === 'team' && team) {
+        teamWrap.classList.remove('hidden');
+        teamEl.textContent = team;
+      }
+
+      // Current lap count
+      lapCountEl.textContent = CTR.getInt('laps.count');
+
+      // If the page was opened with ?lap=1, attempt to count a lap
+      const q = CTR.qs();
+      if (q.lap === '1') {
+        // Optionally accept course from URL for logging; counting is course-agnostic per spec
+        const tagId = q.tag ? String(q.tag) : '';
+        const urlCourse = q.course === 'serious' || q.course === 'fun' ? q.course : (course || '');
+        CTR.handleLapScan({ tagId, urlCourse })
+          .then(() => {
+            lapCountEl.textContent = CTR.getInt('laps.count');
+          });
+      }
+
+      // End Race
+      document.getElementById('end-btn').addEventListener('click', () => {
+        console.log('End Race button clicked');
+        const total = CTR.getInt('laps.count');
+        
+        // Queue the final result
+        CTR.queueEvent({
+          type: 'final',
+          name, course, category, teamName: team,
+          totalLaps: total,
+          clientTime: new Date().toISOString(),
+        });
+        
+        // Try to sync immediately
+        CTR.trySync();
+        
+        // Show feedback
+        CTR.toast('Race ended!');
+        
+        // Navigate to results page
+        const params = new URLSearchParams({
+          name, course, category, team, laps: String(total),
+        });
+        window.location.href = `results.html?${params.toString()}`;
+      });
+
+      // Online/offline syncing
+      window.addEventListener('online', CTR.trySync);
+      window.addEventListener('offline', () => CTR.updateSyncBadge());
+    });
+  </script>
+</body>
+</html> 
