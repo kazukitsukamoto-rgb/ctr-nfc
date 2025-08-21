@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choice to Run — Registration</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#111111" />
+</head>
+<body class="page page--setup" data-page="index">
+  <header class="appbar">
+    <h1>Choice to Run</h1>
+    <div id="sync-badge" class="badge badge--ok" title="Synced"></div>
+  </header>
+
+  <main class="card">
+    <h2>Runner Registration</h2>
+
+    <p class="caution">
+      ⚠️ <strong>Use your real full name</strong><br>
+      Laps won't be recorded otherwise.
+    </p>
+
+    <form id="register-form" novalidate>
+      <label>Full Name
+        <input type="text" id="fullName" placeholder="e.g., Tan Wei Ming" required />
+      </label>
+
+      <fieldset class="row">
+        <legend>Course</legend>
+        <label class="chip">
+          <input type="radio" name="course" value="serious" required />
+          <span>Super Serious Run</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="course" value="fun" required />
+          <span>Super Fun Run</span>
+        </label>
+      </fieldset>
+
+      <fieldset class="row">
+        <legend>Category</legend>
+        <label class="chip">
+          <input type="radio" name="category" value="individual" required />
+          <span>Individual</span>
+        </label>
+        <label class="chip">
+          <input type="radio" name="category" value="team" required />
+          <span>Team</span>
+        </label>
+      </fieldset>
+
+      <label id="team-label" class="hidden">Team Name
+        <input type="text" id="teamName" placeholder="Team name" />
+      </label>
+
+      <script>
+        // Handle team field visibility
+        document.querySelectorAll('input[name="category"]').forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            const teamLabel = document.getElementById('team-label');
+            const teamInput = document.getElementById('teamName');
+            if (e.target.value === 'team') {
+              teamLabel.classList.remove('hidden');
+              teamInput.required = true;
+            } else {
+              teamLabel.classList.add('hidden');
+              teamInput.required = false;
+            }
+          });
+        });
+      </script>
+
+      <button id="start-run-btn" class="btn btn--primary" type="submit">
+        Start Run
+      </button>
+    </form>
+
+    <div class="note">
+      Registration locks after <em>Start Run</em>. Scan NFC tag to count laps.
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <footer class="footer">
+    <a class="link-muted" href="status.html" aria-label="Hidden status page">(status)</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html> 

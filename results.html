@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choice to Run — Results</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0d1a2b" />
+</head>
+<body class="page page--results" data-page="results">
+  <header class="appbar">
+    <h1>Results</h1>
+    <div id="sync-badge" class="badge badge--ok" title="Synced"></div>
+  </header>
+
+  <main class="card">
+    <div class="results">
+      <div class="result-line"><span class="muted">Name</span><strong id="res-name">—</strong></div>
+      <div class="result-line"><span class="muted">Course</span><strong id="res-course">—</strong></div>
+      <div class="result-line"><span class="muted">Category</span><strong id="res-category">—</strong></div>
+      <div id="res-team-wrap" class="result-line hidden"><span class="muted">Team</span><strong id="res-team">—</strong></div>
+      <div class="result-total">
+        <div class="lap-label">Laps</div>
+        <div id="res-laps" class="lap-count">0</div>
+      </div>
+
+      <div class="actions">
+        <button id="send-btn" class="btn btn--primary">Send Result</button>
+        <button id="restart-btn" class="btn btn--danger">Restart</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html> 

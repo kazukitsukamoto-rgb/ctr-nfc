@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choice to Run — Laps</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0d1a2b" />
+</head>
+<body class="page page--run" data-page="run">
+  <header class="appbar">
+    <h1>Laps</h1>
+    <div id="sync-badge" class="badge badge--ok" title="Synced"></div>
+  </header>
+
+  <main class="card card--run">
+    <div class="runner">
+      <div><strong id="runner-who">—</strong></div>
+    </div>
+
+    <div class="lapbox">
+      <div class="lap-label">Laps</div>
+      <div id="lap-count" class="lap-count">0</div>
+      <div id="lap-hint" class="muted">Scan NFC tag to count</div>
+    </div>
+
+    <div class="actions">
+      <button id="end-btn" class="btn btn--danger">End Race</button>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html> 
